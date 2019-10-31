@@ -36,6 +36,7 @@ function FFMPEG(hap, cameraConfig, log, videoProcessor, mqttService) {
   this.maxBitrate = ffmpegOpt.maxBitrate || 300;
   this.debug = ffmpegOpt.debug;
   this.additionalCommandline = ffmpegOpt.additionalCommandline || '-tune zerolatency';
+  this.videoFilter = ffmpegOpt.videoFilter || ''; // null is a valid discrete value
   this.mqttService = mqttService
   if (!ffmpegOpt.source) {
     throw new Error("Missing source for camera.");
@@ -298,6 +299,7 @@ FFMPEG.prototype.handleStreamRequest = function(request) {
         let targetAudioPort = sessionInfo["audio_port"];
         let audioKey = sessionInfo["audio_srtp"];
         let audioSsrc = sessionInfo["audio_ssrc"];
+        let videoFilter = ((this.videoFilter === '') ? ('scale=' + width + ':' + height + '') : (this.videoFilter)); // empty string indicates default
 
         let ffmpegCommand = this.ffmpegSource + ' -map 0:0' +
           ' -vcodec ' + vcodec +
@@ -305,7 +307,7 @@ FFMPEG.prototype.handleStreamRequest = function(request) {
           ' -r ' + fps +
           ' -f rawvideo' +
           ' ' + additionalCommandline +
-          ' -vf scale=' + width + ':' + height +
+          ' -vf ' + videoFilter +
           ' -b:v ' + vbitrate + 'k' +
           ' -bufsize ' + vbitrate+ 'k' +
           ' -maxrate '+ vbitrate + 'k' +

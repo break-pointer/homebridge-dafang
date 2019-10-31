@@ -18,8 +18,15 @@ const MQTTClient = class {
   start(callback) {
     const mqttHost = this.config.host || 'localhost'
     const mqttPort = this.config.port || 1883
-    this.log('MQTT Client connecting to ' + mqttHost + ' : ' + mqttPort)
-    this.client = mqtt.connect('mqtt://' + mqttHost + ':' + mqttPort);
+    let credentials
+    if ('username' in this.config && 'password' in this.config) {
+      credentials = {
+        username: this.config.username,
+        password: this.config.password
+      }
+    }
+    this.log('MQTT Client connecting to ' + mqttHost + ' : ' + mqttPort + (credentials ? ' with credentials' : ''))
+    this.client = mqtt.connect('mqtt://' + mqttHost + ':' + mqttPort, credentials);
     this.client.on('connect', () => {
       this.log('MQTT Client Connected to ' + mqttHost + ':' + mqttPort)
     })
